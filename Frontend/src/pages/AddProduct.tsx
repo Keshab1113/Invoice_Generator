@@ -50,6 +50,33 @@ const AddProduct: React.FC = () => {
         setProducts(sortedProducts);
     };
 
+    const generatePDF = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/pdf/generate-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ products }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'invoice.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+        }
+    };
 
     // Calculate the total price for all products
     const calculateTotal = () => {
@@ -60,10 +87,12 @@ const AddProduct: React.FC = () => {
 
     return (
         <div className="h-full bg-black text-white">
-            <div className=" w-[80%] mx-auto py-12">
-                <h2 className="text-4xl font-bold mb-6">Add Products</h2>
-                <p className="mb-6 text-[#868886] text-xl ">This is basic login page which is used for levitation <span className=' line-clamp-2'>assignment purpose.</span> </p>
-                <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="w-full lg:w-[80%] mx-auto py-12 px-4">
+                <h2 className="text-3xl lg:text-4xl font-bold mb-6">Add Products</h2>
+                <p className="mb-6 text-[#868886] text-lg lg:text-xl">
+                    This is basic login page which is used for levitation <span className="line-clamp-2">assignment purpose.</span>
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div>
                         <h1>Product Name</h1>
                         <input
@@ -98,23 +127,25 @@ const AddProduct: React.FC = () => {
 
                 <button
                     onClick={handleAddProduct}
-                    className="bg-[#343c34] text-[#b2fb3b] py-2 px-4 rounded flex justify-center items-center gap-2"
+                    className="bg-[#343c34] text-[#b2fb3b] py-2 px-4 rounded flex justify-center items-center gap-2 w-full md:w-auto"
                 >
                     Add Product <FiPlusCircle />
                 </button>
 
                 {/* Table for product listing */}
-                <div className="mt-8">
-                    <table className="w-full rounded border-x border-[#6d776d]">
+                <div className="mt-8 overflow-x-auto">
+                    <table className="w-full rounded border-x border-[#6d776d] min-w-[600px]">
                         <thead>
                             <tr className="text-left bg-white text-black">
                                 <th className="py-2 px-4 cursor-pointer" onClick={() => sortProducts('name')}>
-                                    <h1 className='flex items-center gap-1'>
-                                        Product Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? <IoMdArrowUp /> : <IoArrowDown />) : <LuArrowDownUp />}</h1>
+                                    <h1 className="flex items-center gap-1">
+                                        Product Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? <IoMdArrowUp /> : <IoArrowDown />) : <LuArrowDownUp />}
+                                    </h1>
                                 </th>
                                 <th className="py-2 px-4 cursor-pointer" onClick={() => sortProducts('quantity')}>
-                                    <h1 className='flex items-center gap-1'>
-                                        Quantity {sortConfig.key === 'quantity' ? (sortConfig.direction === 'asc' ? <IoMdArrowUp /> : <IoArrowDown />) : <LuArrowDownUp />}</h1>
+                                    <h1 className="flex items-center gap-1">
+                                        Quantity {sortConfig.key === 'quantity' ? (sortConfig.direction === 'asc' ? <IoMdArrowUp /> : <IoArrowDown />) : <LuArrowDownUp />}
+                                    </h1>
                                 </th>
                                 <th className="py-2 px-4">Price</th>
                                 <th className="py-2 px-4">Total Price</th>
@@ -137,7 +168,7 @@ const AddProduct: React.FC = () => {
                                             <td className="py-2 px-4">INR {(product.price * product.quantity).toFixed(2)}</td>
                                         </tr>
                                     ))}
-                                        <tr className=" border-y border-[#6d776d]">
+                                    <tr className="border-y border-[#6d776d]">
                                         <td className="py-2 px-4 text-right" colSpan={3}>+GST 18%</td>
                                         <td className="py-2 px-4">INR {calculateTotal()}</td>
                                     </tr>
@@ -149,15 +180,15 @@ const AddProduct: React.FC = () => {
                     {/* Total and Generate PDF button */}
                     <div className="mt-6 flex justify-center items-center">
                         <button
-                            onClick={() => alert('Generate PDF logic here')}
-                            className="bg-[#343c34] text-[#b2fb3b] py-2 px-16 rounded"
+                            onClick={generatePDF}
+                            className="bg-[#343c34] text-[#b2fb3b] py-2 px-16 rounded w-full md:w-auto"
                         >
                             Generate PDF Invoice
                         </button>
                     </div>
                 </div>
             </div>
-            <div className=' absolute top-[10%] right-[50%] backgroundstyle shadow-[10px_10px_300px_100px_violet] rounded-full'></div>
+            <div className="absolute top-[10%] right-[50%] backgroundstyle shadow-[10px_10px_300px_100px_violet] rounded-full"></div>
         </div>
     );
 };
