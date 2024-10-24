@@ -55,7 +55,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 
         const token = jwt.sign(
             { email: existingUser.email, id: existingUser._id },
-            process.env.JWT_SECRET || 'secret', // Ideally, use an environment variable for the secret
+            process.env.JWT_SECRET || 'secret',
             { expiresIn: '1h' }
         );
 

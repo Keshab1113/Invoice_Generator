@@ -7,14 +7,13 @@ import toast, { Toaster } from 'react-hot-toast';
 const Header = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { user } = useSelector((state: RootState) => state.auth);
-    const location = useLocation(); // Track the current route
+    const location = useLocation();
 
     const handleLogout = () => {
         dispatch(logout());
         toast.success("Logout Successful");
     };
 
-    // Check the current route to adjust button text and behavior
     const isLoginPage = location.pathname === '/login';
 
     return (
@@ -33,7 +32,6 @@ const Header = () => {
 
             <div>
                 {user ? (
-                    // Show "Logout" button if user is authenticated
                     <button
                         onClick={handleLogout}
                         className="bg-[#2af62a] text-black font-medium py-2 px-3 rounded transition duration-300 text-sm md:text-base md:py-2 md:px-4"
@@ -41,7 +39,6 @@ const Header = () => {
                         Logout
                     </button>
                 ) : (
-                    // Show "Connecting people with technology" on the login page, and "Login" on other pages like Register
                     isLoginPage ? (
                         <Link to={"/register"} className="border-[#2af62a] border text-[#2af62a] font-medium py-2 px-3 rounded transition duration-300 text-sm md:text-base md:py-2 md:px-4">
                             Connecting People With Technology

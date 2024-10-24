@@ -10,19 +10,17 @@ import {
     PURGE,
     REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web
+import storage from 'redux-persist/lib/storage';
 import authReducer from '../features/auth/authSlice';
 
-// Create a rootReducer to combine reducers
 const rootReducer = combineReducers({
     auth: authReducer,
 });
 
-// Configuring redux-persist
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['auth'], // only auth will be persisted
+    whitelist: ['auth'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

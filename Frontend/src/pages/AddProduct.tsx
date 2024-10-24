@@ -3,6 +3,10 @@ import { FiPlusCircle } from "react-icons/fi";
 import { IoMdArrowUp } from "react-icons/io";
 import { IoArrowDown } from "react-icons/io5";
 import { LuArrowDownUp } from "react-icons/lu";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 
 interface Product {
     name: string;
@@ -16,8 +20,8 @@ const AddProduct: React.FC = () => {
     const [productPrice, setProductPrice] = useState<number | ''>('');
     const [productQuantity, setProductQuantity] = useState<number | ''>('');
     const [sortConfig, setSortConfig] = useState<{ key: keyof Product | null, direction: 'asc' | 'desc' | null }>({ key: null, direction: null });
+    const user = useSelector((state: RootState) => state.auth.user);
 
-    // Handle adding a new product
     const handleAddProduct = () => {
         if (productName && productPrice !== '' && productQuantity !== '') {
             setProducts([
@@ -34,7 +38,6 @@ const AddProduct: React.FC = () => {
         }
     };
 
-    // Sorting functionality
     const sortProducts = (key: keyof Product) => {
         let direction = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -50,35 +53,56 @@ const AddProduct: React.FC = () => {
         setProducts(sortedProducts);
     };
 
-    const generatePDF = async () => {
-        try {
-            const response = await fetch('http://localhost:5000/api/pdf/generate-pdf', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ products }),
-            });
+    const generatePDF = () => {
+        const doc = new jsPDF();
+        const currentDate = new Date().toLocaleString();
+        const companyName = 'Levitation Infotech';
+        const travellerName = user.username;
+        const email = user.email;
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+        doc.setFontSize(24);
+        doc.text('INVOICE GENERATOR', 70, 15);
+        doc.setFontSize(16);
+        doc.text('Sample Output should be this', 75, 25);
+        doc.addImage('/logo.png', 'PNG', 10, 10, 30, 30);
+        doc.setFontSize(12);
+        doc.text(`Company: ${companyName}`, 10, 50);
+        doc.text(`Traveller: ${travellerName}`, 10, 60);
+        doc.text(`Email: ${email}`, 10, 70);
+        doc.text(`Date: ${currentDate}`, 10, 80);
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'invoice.pdf';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-        }
+        const tableColumn = ['Product', 'Qty', 'Rate', 'Total Amount'];
+        const tableRows: Array<any> = [];
+
+        products.forEach((product) => {
+            const productData = [
+                product.name,
+                product.quantity.toString(),
+                product.price.toFixed(2),
+                (product.price * product.quantity).toFixed(2),
+            ];
+            tableRows.push(productData);
+        });
+
+        doc.autoTable({
+            startY: 90,
+            head: [tableColumn],
+            body: tableRows,
+        });
+
+        const totalPrice = calculateTotal();
+        doc.setFontSize(12);
+        doc.text(`Total Charges: INR ${totalPrice}`, 10, doc.lastAutoTable.finalY + 10);
+        doc.text(`GST (18%): INR ${(totalPrice * 0.18).toFixed(2)}`, 10, doc.lastAutoTable.finalY + 20);
+        doc.text(`Total Amount: INR ${(totalPrice * 1.18).toFixed(2)}`, 10, doc.lastAutoTable.finalY + 30);
+
+        doc.text(`Date: ${currentDate}`, 10, doc.lastAutoTable.finalY + 40);
+        doc.setFontSize(10);
+        doc.text('We are pleased to provide any further information you may require and look forward to assisting with your next order. Rest assured, it will receive our prompt and dedicated attention.', 10, doc.lastAutoTable.finalY + 50);
+
+        doc.save('invoice.pdf');
     };
 
-    // Calculate the total price for all products
     const calculateTotal = () => {
         return products
             .reduce((total, product) => total + (product.price + product.price * 0.18) * product.quantity, 0)
@@ -132,7 +156,6 @@ const AddProduct: React.FC = () => {
                     Add Product <FiPlusCircle />
                 </button>
 
-                {/* Table for product listing */}
                 <div className="mt-8 overflow-x-auto">
                     <table className="w-full rounded border-x border-[#6d776d] min-w-[600px]">
                         <thead>
@@ -176,8 +199,6 @@ const AddProduct: React.FC = () => {
                             )}
                         </tbody>
                     </table>
-
-                    {/* Total and Generate PDF button */}
                     <div className="mt-6 flex justify-center items-center">
                         <button
                             onClick={generatePDF}
@@ -188,7 +209,7 @@ const AddProduct: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="absolute top-[10%] right-[50%] backgroundstyle shadow-[10px_10px_300px_100px_violet] rounded-full"></div>
+            <div className="absolute top-[10%] right-[50%] backgroundstyle shadow-[10px_10px_300px_100px_violet]"></div>
         </div>
     );
 };

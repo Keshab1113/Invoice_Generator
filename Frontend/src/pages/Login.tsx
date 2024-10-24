@@ -11,7 +11,6 @@ const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const dispatch = useDispatch<AppDispatch>();
-    // const { status, error } = useSelector((state: RootState) => state.auth);
     const navigate = useNavigate();
     
 
@@ -23,6 +22,8 @@ const Login: React.FC = () => {
             if (loginUser.fulfilled.match(resultAction)) {
                 navigate('/');
                 toast.success("Login Successfull");
+            } else {
+                toast.error("Invalid user details");
             }
             
         } catch (error:any) {
@@ -86,7 +87,6 @@ const Login: React.FC = () => {
                     position="top-right"
                     reverseOrder={false}
                 />
-                {/* {status === 'failed' && error && <p>{Array.isArray(error) ? error.map((err, i) => <span key={i}>{err}</span>) : error}</p>} */}
             </div>
             <div className=' absolute left-0 bottom-0 backgroundstyle shadow-[50px_0px_200px_120px_green] rounded-full'></div>
             <div className=' absolute right-0 top-[30%] backgroundstyle shadow-[10px_50px_500px_100px_violet] rounded-full'></div>

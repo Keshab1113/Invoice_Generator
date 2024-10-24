@@ -2,8 +2,7 @@ import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import pdfRoutes from './routes/pdfRoutes';
-import userRoutes from './routes/userRoutes'; // Placeholder for user routes
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -11,21 +10,16 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: '*', // Adjust for production
+    origin: '*',
 }));
 app.use(express.json());
-app.use('/api/users', userRoutes); // User routes
-app.use('/api/pdf', pdfRoutes); // PDF generation routes
-app.use((req: Request, res: Response, next) => {
-    console.log(`${req.method} request for '${req.url}'`);
-    next();
-});
+app.use('/api/users', userRoutes);
+
 
 app.get('/', (req: Request, res: Response) => {
     res.send('API is running');
 });
 
-// MongoDB connection
 mongoose.connect(process.env.MONGO_URI as string)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
