@@ -14,6 +14,27 @@ interface Product {
     quantity: number;
 }
 
+declare module 'jspdf' {
+    interface jsPDF {
+        autoTable(options: {
+            startY?: number;
+            head: string[][];
+            body: any[][];
+        }): jsPDF;
+    }
+}
+
+declare module 'jspdf-autotable' {
+    interface AutoTableOptions {
+        didDrawCell?: (data: {
+            cell: {
+                y: number;
+                height: number;
+            };
+        }) => void;
+    }  
+}
+
 const AddProduct: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [productName, setProductName] = useState('');
@@ -38,8 +59,10 @@ const AddProduct: React.FC = () => {
         }
     };
 
+    type SortDirection = 'asc' | 'desc' | null;
+
     const sortProducts = (key: keyof Product) => {
-        let direction = 'asc';
+        let direction: SortDirection = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc';
         }
@@ -83,31 +106,38 @@ const AddProduct: React.FC = () => {
             ];
             tableRows.push(productData);
         });
-
+        let lastY = 90;
         doc.autoTable({
-            startY: 90,
+            startY: lastY,
             head: [tableColumn],
             body: tableRows,
+            
         });
-
-        const totalPrice = calculateTotal();
+        const totalPrice: number = calculateTotal();
         doc.setFontSize(12);
-        doc.text(`Total Charges: INR ${totalPrice}`, 10, doc.lastAutoTable.finalY + 10);
-        doc.text(`GST (18%): INR ${(totalPrice * 0.18).toFixed(2)}`, 10, doc.lastAutoTable.finalY + 20);
-        doc.text(`Total Amount: INR ${(totalPrice * 1.18).toFixed(2)}`, 10, doc.lastAutoTable.finalY + 30);
+        doc.text(`Total Charges: INR ${totalPrice.toFixed(2)}`, 10, lastY + 10);
+        doc.text(`GST (18%): INR ${(totalPrice * 0.18).toFixed(2)}`, 10, lastY + 20);
+        doc.text(`Total Amount: INR ${(totalPrice * 1.18).toFixed(2)}`, 10, lastY + 30);
 
-        doc.text(`Date: ${currentDate}`, 10, doc.lastAutoTable.finalY + 40);
+        doc.text(`Date: ${currentDate}`, 10, lastY + 40);
         doc.setFontSize(10);
-        doc.text('We are pleased to provide any further information you may require and look forward to assisting with your next order. Rest assured, it will receive our prompt and dedicated attention.', 10, doc.lastAutoTable.finalY + 50);
+        doc.text('We are pleased to provide any further information you may require and look forward to assisting with your next order. Rest assured, it will receive our prompt and dedicated attention.', 10, lastY + 50);
 
         doc.save('invoice.pdf');
     };
 
-    const calculateTotal = () => {
-        return products
-            .reduce((total, product) => total + (product.price + product.price * 0.18) * product.quantity, 0)
-            .toFixed(2);
+
+
+
+
+
+
+    const calculateTotal = (): number => {
+        return products.reduce((total, product) => {
+            return total + (product.price + product.price * 0.18) * product.quantity;
+        }, 0);
     };
+
 
     return (
         <div className="h-full bg-black text-white">
